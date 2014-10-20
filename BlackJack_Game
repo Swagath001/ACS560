@@ -1,0 +1,231 @@
+import java.util.ArrayList;
+import java.util.ListIterator;
+import java.util.Random;
+import java.util.Scanner;
+
+import javax.swing.text.html.HTMLDocument.Iterator;
+
+class Card {
+	String value;
+	String suitType;
+	String available;
+	Card(String value, String type) {
+		this.value = value;
+		this.suitType = type;
+		this.available = "yes";
+	}
+	void setAvailability(String availability)
+	{
+		available = availability;
+		
+	}
+	boolean getAvailability() {
+		if(available == "yes") {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	void getCardInfo() {
+		System.out.println(value+""+suitType);
+	}
+
+	
+}
+class Hand {
+   ArrayList<BlackJackCard> cardsList = new ArrayList<BlackJackCard>();
+   
+   void addCard(BlackJackCard c3) {
+	   cardsList.add(c3);
+   }
+ /*  public String count()
+   {
+	   Iterator iCardsList =  cardsList.iterator();
+	   String temp = 0;
+	   while(iCardsList.hasNext()) {
+	    BlackJackCard c1 = cardsList.next();
+	       temp = temp+c1.value;
+	   }
+	   return temp;
+   } */
+   public void displayHand()
+   {
+	   ListIterator<BlackJackCard> iCardsList =  cardsList.listIterator();
+	   while(iCardsList.hasNext()) {
+	    BlackJackCard c1 = iCardsList.next();
+	       c1.getCardInfo();
+	   }  
+   }
+	
+}
+class BlackJackCard extends Card{
+	
+	int minValue;
+	int maxValue;
+	BlackJackCard(String symbol,String suitType) {
+		super(symbol,suitType);
+		if(symbol=="A") {
+			minValue = 1;
+			maxValue = 11;
+		}
+		else if(symbol=="Q" || symbol=="K" || symbol=="J") {
+			minValue = 10;
+			maxValue = 10;
+		}
+		else {
+			minValue = maxValue =Integer.parseInt(symbol);
+		
+		}	
+			
+	}
+	
+}
+class BlackJackHand extends Hand {
+	int score;
+	
+	BlackJackHand() {
+		super();
+		 ListIterator<BlackJackCard> iCardsList = cardsList.listIterator();
+		 int tempMinScore = 0;
+		 int tempMaxScore = 0;
+		 while(iCardsList.hasNext()) {
+				 tempMinScore = tempMinScore+iCardsList.next().minValue;
+				 tempMaxScore = tempMaxScore+iCardsList.next().maxValue;							 
+		 }
+		 if((tempMinScore == tempMaxScore) || 
+		    ((tempMinScore < 21 || tempMinScore == 21 || tempMinScore > 21) && tempMaxScore > 21)) {
+			 score = tempMinScore;
+		 }
+		 else if(tempMinScore < 21 && (tempMaxScore < 21 || tempMaxScore == 21)) {
+			 score = tempMaxScore ;
+		 }
+		
+	}
+
+	
+}
+class Deck {
+	BlackJackCard[] c = new BlackJackCard[52];
+	ArrayList<BlackJackHand> handsList = new ArrayList<BlackJackHand>();
+	String[] suitlist = { "c", "s", "d" ,"h"};
+	String[] symbolList = {"2","3","4","5","6","7","8","9","10","Q","K","J","A"};
+
+	int k = 0;
+	Deck() {
+		
+	for (int i = 0; i<suitlist.length; i++) {
+		for (int j = 0; j<symbolList.length; j++) {
+			//System.out.println(k+"");
+			c[k] = new BlackJackCard(suitlist[i],symbolList[j]);
+			    k++;
+		}
+	  }
+	}
+	void createHand() {
+	 BlackJackHand temphand = new BlackJackHand();
+	 handsList.add(temphand);
+	}
+	void assignCard(BlackJackHand h) {
+		Random n = new Random();
+		int a = n.nextInt(52)+1;
+		int flag = 0;
+		while(flag == 0) {
+	       if(c[a].getAvailability()) {
+		    h.addCard((BlackJackCard) c[a]);
+		   c[a].available = "no";
+		    flag = 1;
+	       }
+	       a = n.nextInt(52)+1; 
+	    }
+	 }
+
+}
+
+class BlackJackGameAutomator {
+	Deck d = new Deck();
+	
+	
+	void deal() {
+		ListIterator<BlackJackHand> iHandsList = d.handsList.listIterator();
+		while(iHandsList.hasNext()) {
+			BlackJackHand bh = (BlackJackHand) iHandsList.next();
+			for(int i=1 ; i<=2 ; i++) {
+			    d.assignCard(bh);
+			}
+		}
+	}
+   void playHand (BlackJackHand bh) {
+	   if(bh.score <= 16) {
+	   d.assignCard(bh);	
+	   }
+   }
+   void playAllHands() {
+	   ListIterator<BlackJackHand> iHandsList = d.handsList.listIterator();
+		while(iHandsList.hasNext()) {
+			 playHand((BlackJackHand) iHandsList.next());
+		}
+   }
+   void findWinner() {
+	   ListIterator<BlackJackHand> iHandsList = d.handsList.listIterator();
+	   int flag = 0;
+	   System.out.println("Checking winners");
+		while(iHandsList.hasNext()) {
+			 if(iHandsList.next().score == 21) {
+				 System.out.println(iHandsList.nextIndex());
+				 flag = 1;
+			 }
+		}
+		if(flag==0) {
+			System.out.println("No winners yet");
+		}
+   }
+   void display() {
+       ArrayList<BlackJackHand> abh = d.handsList;
+	   ListIterator iHandsList = abh.listIterator();
+	   int k = 0;
+	   System.out.println("automator inside"+iHandsList.hasNext());
+		while(iHandsList.hasNext()) {
+		  System.out.println("automator while");
+			BlackJackHand bh =  (BlackJackHand)iHandsList.next();
+			   System.out.println("Player("+k+") :");
+			   bh.displayHand();
+			   
+		}
+   }
+   
+	
+}
+public class BlackJackGame {
+
+	public static void main(String[] args) {
+		BlackJackGameAutomator bcja = new BlackJackGameAutomator();
+		Scanner sc = new Scanner(System.in);
+		int flag = 0;
+		String status;
+		System.out.println("Creating Deck");
+		System.out.println("Creating Players");
+		for(int i=1;i<=5;i++) {
+		  bcja.d.createHand();
+		}
+		System.out.println("Dealing cards");
+		bcja.deal();
+		System.out.println("Displaying cards");
+		bcja.display();
+		bcja.findWinner();
+		while(flag == 0) {
+			System.out.println("Do you want to play all hands (y/n)");
+			status = sc.nextLine();
+			if(status.equals("y")) {
+				bcja.playAllHands();
+				bcja.findWinner();
+			}
+			else {
+				flag = 1;
+			     System.out.println("Game ends");
+			}
+		}
+
+	}
+
+}
